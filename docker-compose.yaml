@@ -1,0 +1,83 @@
+services:
+
+  eureka-server:
+    image: ticketing/eureka-server:0.1
+    ports:
+      - "8761:8761"
+    networks:
+      - ticketing-network
+
+  user-service:
+    image: ticketing/user-service:0.1
+    ports:
+      - "8081:8081"
+    depends_on:
+      - eureka-server
+    networks:
+      - ticketing-network
+    environment:
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+
+  ticket-service:
+    image: ticketing/ticket-service:0.1
+    ports:
+      - "8082:8082"
+    depends_on:
+      - eureka-server
+    networks:
+      - ticketing-network
+    environment:
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+
+  notification-service:
+    image: ticketing/notification-service:0.1
+    ports:
+      - "8085:8085"
+    depends_on:
+      - eureka-server
+    networks:
+      - ticketing-network
+    environment:
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+
+  assignment-service:
+    image: ticketing/assignment-service:0.1
+    ports:
+      - "8083:8083"
+    depends_on:
+      - eureka-server
+      - notification-service
+    networks:
+      - ticketing-network
+    environment:
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+
+  activity-service:
+    image: ticketing/activity-service:0.1
+    ports:
+      - "8084:8084"
+    depends_on:
+      - eureka-server
+    networks:
+      - ticketing-network
+    environment:
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+
+  api-gateway:
+    image: ticketing/api-gateway:0.1
+    ports:
+      - "8765:8765"
+    depends_on:
+      - eureka-server
+      - user-service
+      - ticket-service
+      - assignment-service
+      - activity-service
+      - notification-service
+    networks:
+      - ticketing-network
+    environment:
+      - eureka.client.service-url.defaultZone=http://eureka-server:8761/eureka
+
+networks:
+  ticketing-network:
